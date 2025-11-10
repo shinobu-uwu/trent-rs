@@ -2,6 +2,10 @@
 name = "trent"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+authors = ["Shinobu"]
+description = "Wrapper around the YGOPRODeck API for rust"
+repository = "https://github.com/shinobu-uwu/trent-rs"
 
 [dependencies]
 reqwest = { version = "0.12.24", features = ["json"] }
