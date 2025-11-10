@@ -36,6 +36,24 @@ pub enum Card {
     /// A trap card.
     #[serde(rename = "trap")]
     Trap(TrapCard),
+    /// A Pendulum Monster
+    ///
+    /// Covers all pendulum-based frame types from the API:
+    /// - `normal_pendulum`
+    /// - `effect_pendulum`
+    /// - `ritual_pendulum`
+    /// - `fusion_pendulum`
+    /// - `synchro_pendulum`
+    /// - `xyz_pendulum`
+    #[serde(
+        rename = "normal_pendulum",
+        alias = "effect_pendulum",
+        alias = "ritual_pendulum",
+        alias = "fusion_pendulum",
+        alias = "synchro_pendulum",
+        alias = "xyz_pendulum"
+    )]
+    Pendulum(PendulumMonster),
 }
 
 /// Shared metadata for all Yu-Gi-Oh! cards.
@@ -138,6 +156,20 @@ pub struct XyzMonster {
     pub rank: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PendulumMonster {
+    #[serde(flatten)]
+    pub info: CardInfo,
+    pub race: MonsterRace,
+    pub attribute: Attribute,
+    pub atk: i32,
+    pub def: i32,
+    pub level: u8,
+    #[serde(rename = "type")]
+    pub card_type: MonsterType,
+    pub scale: u8,
 }
 
 /// Represents a Link Monster card.

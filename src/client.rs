@@ -118,6 +118,15 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn list_all_cards() {
+        let client = Client::new();
+        let result = client.get(Request::default()).await;
+        assert!(result.is_ok());
+        let cards = result.unwrap();
+        assert!(cards.len() > 200);
+    }
+
+    #[tokio::test]
     async fn get_normal_monsters_with_1800_atk() {
         let client = Client::new();
         let request = RequestBuilder::new()
