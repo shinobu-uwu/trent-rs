@@ -18,6 +18,8 @@ pub enum Card {
     /// A monster with a continuous or triggered effect.
     #[serde(rename = "effect")]
     Effect(EffectMonster),
+    #[serde(rename = "ritual")]
+    Ritual(RitualMonster),
     /// A monster that is fusion summoned.
     #[serde(rename = "fusion")]
     Fusion(FusionMonster),
@@ -36,6 +38,10 @@ pub enum Card {
     /// A trap card.
     #[serde(rename = "trap")]
     Trap(TrapCard),
+    #[serde(rename = "skill")]
+    Skill,
+    #[serde(rename = "token")]
+    Token,
     /// A Pendulum Monster
     ///
     /// Covers all pendulum-based frame types from the API:
@@ -102,6 +108,20 @@ pub struct NormalMonster {
 /// Represents an Effect Monster card.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EffectMonster {
+    #[serde(flatten)]
+    pub info: CardInfo,
+    pub race: MonsterRace,
+    pub attribute: Attribute,
+    pub atk: i32,
+    pub def: i32,
+    pub level: u8,
+    #[serde(rename = "type")]
+    pub card_type: MonsterType,
+}
+
+/// Represents a Ritual Monster card.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RitualMonster {
     #[serde(flatten)]
     pub info: CardInfo,
     pub race: MonsterRace,
@@ -242,6 +262,7 @@ pub enum MonsterRace {
     Fairy,
     Fiend,
     Fish,
+    Illusion,
     Insect,
     Machine,
     Plant,
@@ -427,6 +448,7 @@ impl Display for MonsterRace {
             MonsterRace::Fairy => "Fairy",
             MonsterRace::Fiend => "Fiend",
             MonsterRace::Fish => "Fish",
+            MonsterRace::Illusion => "Illusion",
             MonsterRace::Insect => "Insect",
             MonsterRace::Machine => "Machine",
             MonsterRace::Plant => "Plant",
