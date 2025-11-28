@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::IntoDeserializer};
 
 /// Represents any Yu-Gi-Oh! card.
 ///
@@ -98,6 +98,7 @@ pub struct NormalMonster {
     pub info: CardInfo,
     pub race: MonsterRace,
     pub attribute: Attribute,
+    #[serde(deserialize_with = "zero_if_null")]
     pub level: u8,
     pub atk: i32,
     pub def: i32,
@@ -114,6 +115,7 @@ pub struct EffectMonster {
     pub attribute: Attribute,
     pub atk: i32,
     pub def: i32,
+    #[serde(deserialize_with = "zero_if_null")]
     pub level: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
@@ -128,6 +130,7 @@ pub struct RitualMonster {
     pub attribute: Attribute,
     pub atk: i32,
     pub def: i32,
+    #[serde(deserialize_with = "zero_if_null")]
     pub level: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
@@ -142,6 +145,9 @@ pub struct FusionMonster {
     pub attribute: Attribute,
     pub atk: i32,
     pub def: i32,
+    // this is needed because, for some reason, `Dracotail Shaurus`
+    // returns null for its level, despite being a level 6
+    #[serde(deserialize_with = "zero_if_null")]
     pub level: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
@@ -156,6 +162,7 @@ pub struct SynchroMonster {
     pub attribute: Attribute,
     pub atk: i32,
     pub def: i32,
+    #[serde(deserialize_with = "zero_if_null")]
     pub level: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
@@ -173,6 +180,7 @@ pub struct XyzMonster {
     pub atk: i32,
     pub def: i32,
     #[serde(rename = "level")]
+    #[serde(deserialize_with = "zero_if_null")]
     pub rank: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
@@ -186,6 +194,7 @@ pub struct PendulumMonster {
     pub attribute: Attribute,
     pub atk: i32,
     pub def: i32,
+    #[serde(deserialize_with = "zero_if_null")]
     pub level: u8,
     #[serde(rename = "type")]
     pub card_type: MonsterType,
@@ -220,6 +229,9 @@ pub struct SpellCard {
 pub struct TrapCard {
     #[serde(flatten)]
     pub info: CardInfo,
+    // this is needed because, for some reason, `Maliss GWC-06` returns
+    // an empty string on the race field
+    #[serde(deserialize_with = "empty_to_normal_trap")]
     pub race: TrapRace,
 }
 
@@ -252,7 +264,7 @@ pub enum MonsterRace {
     Beast,
     #[serde(rename = "Beast-Warrior")]
     BeastWarrior,
-    #[serde(rename = "Creator-God")]
+    #[serde(rename = "Creator God")]
     CreatorGod,
     Cyberse,
     Dinosaur,
@@ -496,5 +508,25 @@ impl Display for LinkMarker {
             LinkMarker::BottomRight => "Bottom-Right",
         };
         write!(f, "{}", text)
+    }
+}
+
+fn zero_if_null<'de, D>(deserializer: D) -> Result<u8, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Option::<u8>::deserialize(deserializer)?.unwrap_or(0))
+}
+
+fn empty_to_normal_trap<'de, D>(deserializer: D) -> Result<TrapRace, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: String = String::deserialize(deserializer)?;
+
+    if s.trim().is_empty() {
+        Ok(TrapRace::Normal)
+    } else {
+        TrapRace::deserialize(s.into_deserializer())
     }
 }

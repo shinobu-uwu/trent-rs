@@ -54,10 +54,10 @@ impl Client {
             return Err(Error::NotFound);
         }
 
-        let json = response
-            .json::<ApiResponse>()
-            .await
-            .map_err(|_| Error::Deserialization)?;
+        let json = response.json::<ApiResponse>().await.map_err(|e| {
+            dbg!(&e);
+            Error::Deserialization
+        })?;
 
         match json.data.into_iter().next() {
             Some(c) => Ok(c),
